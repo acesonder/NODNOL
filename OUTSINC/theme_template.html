@@ -1,0 +1,639 @@
+<!--
+  File: outsinc-landing-activist.html
+  Purpose: Single-file landing page prototype using the ACTIVIST navbar theme,
+           neon/line icon vibe, marquee under nav, auto-rotating CTAs (every ~7–10s),
+           impact counters, MOMCARE front-stage showcase, other apps window,
+           Report an Issue, Resource Directory, and Partner Logo Wall.
+
+  Tech: Pure HTML/CSS/JS (no external libraries, no external fonts).
+  Notes:
+   - Replace placeholder images with your own later.
+   - Hook real links/actions on buttons (data-action attributes included).
+   - Slider rotates 4 CTAs in the order you requested; interval randomizes 7–10s.
+-->
+
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>OUTSINC • Care. Connection. Change.</title>
+<style>
+  :root{
+    /* Brand + theme */
+    --bg: #0b0b0b;
+    --surface: #121212;
+    --surface-2:#171717;
+    --ink: #f2f2f2;
+    --muted:#b3b3b3;
+    --line:#2a2a2a;
+
+    /* Activist energy */
+    --cta:#ff5252;          /* primary action red */
+    --cta-2:#ffb020;        /* accent (amber) */
+    --glow:#00e5ff;         /* neon glow for lines/text */
+    --positive:#2ecc71;
+    --warn:#f1c40f;
+
+    /* App accents */
+    --momcare:#ff6f91;
+    --ethan:#32cd32;
+    --dcide:#00bfff;
+    --foot:#ffb020;
+
+    --radius:16px;
+    --shadow: 0 14px 40px rgba(0,0,0,.45);
+  }
+
+  /* Global */
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0; color:var(--ink); background:
+      radial-gradient(1200px 800px at 70% -200px, #1a1a1a 0%, #0c0c0c 50%, #000 100%),
+      #000;
+    font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial;
+  }
+  a{color:inherit; text-decoration:none}
+  h1,h2,h3{margin:0 0 10px}
+  .wrap{max-width:1200px; margin:0 auto; padding:0 16px}
+
+  /* Minimal Line + Neon Glow vibe (for headings / key labels) */
+  .neon{
+    letter-spacing:.5px;
+    text-shadow:
+      0 0 6px rgba(0,229,255,.6),
+      0 0 18px rgba(0,229,255,.35);
+  }
+  .outline{
+    -webkit-text-stroke: 1px rgba(255,255,255,.7);
+    color: transparent;
+    text-shadow: 0 0 10px rgba(255,255,255,.2);
+  }
+
+  /* ACTIVIST NAVBAR */
+  .nav{
+    position:sticky; top:0; z-index:50;
+    background: linear-gradient(180deg,#121212,#0c0c0c);
+    border-bottom:1px solid var(--line);
+    box-shadow: 0 8px 30px rgba(0,0,0,.4);
+  }
+  .nav-row{
+    display:flex; align-items:center; gap:14px; padding:12px 0;
+  }
+  .brand{
+    display:flex; align-items:center; gap:10px; font-weight:900; letter-spacing:.6px;
+  }
+  .brand-mark{
+    width:28px; height:28px; border-radius:8px;
+    background: conic-gradient(from 120deg, var(--dcide), var(--ethan), var(--momcare), var(--foot), var(--dcide));
+    box-shadow: inset 0 0 10px rgba(255,255,255,.25), 0 0 18px rgba(255,82,82,.35);
+  }
+  .nav-links{
+    margin-left:auto; display:flex; gap:10px; align-items:center; flex-wrap:wrap;
+  }
+  .pill{
+    padding:8px 12px; border-radius:999px; border:1px solid var(--line);
+    background:#151515;
+    transition: all .15s ease;
+    display:inline-flex; align-items:center; gap:8px;
+  }
+  .pill:hover{border-color:#3a3a3a; transform:translateY(-1px)}
+  .pill-cta{
+    background: var(--cta); color:#fff; border:0;
+    text-shadow: 0 0 10px rgba(255,82,82,.35);
+  }
+  .pill-outline{ border-color: #3a3a3a; background: transparent; }
+
+  /* SCROLLING MARQUEE (below nav) */
+  .marquee{
+    overflow:hidden; border-top:1px solid var(--line); border-bottom:1px solid var(--line);
+    background: linear-gradient(90deg, rgba(255,82,82,.08), rgba(0,229,255,.08));
+  }
+  .marquee-track{
+    white-space:nowrap; display:inline-block; padding:8px 0; animation: slide 22s linear infinite;
+  }
+  .chip{
+    display:inline-flex; align-items:center; gap:10px; margin:0 18px; padding:8px 12px;
+    border-radius:999px; background:#151515; border:1px solid var(--line); color:#ddd; font-weight:700;
+  }
+  @keyframes slide{ from{transform:translateX(0)} to{transform:translateX(-50%)} }
+
+  /* HERO CTA SLIDER */
+  .hero{
+    padding:22px 0 4px;
+    border-bottom:1px solid var(--line);
+    background:
+      radial-gradient(700px 250px at 20% -40px, rgba(255,82,82,.15), transparent 60%),
+      radial-gradient(700px 250px at 80% -60px, rgba(0,229,255,.12), transparent 60%);
+  }
+  .slider{
+    position:relative; overflow:hidden; border-radius:var(--radius);
+    border:1px solid var(--line); background:var(--surface); box-shadow:var(--shadow);
+  }
+  .slides{ display:flex; transition: transform .45s ease; }
+  .slide{ min-width:100%; display:grid; grid-template-columns: 1.2fr .8fr; gap:20px; padding:28px; }
+  @media (max-width:900px){ .slide{ grid-template-columns: 1fr; } }
+  .slide h1{ font-size: clamp(22px, 3.8vw, 40px); }
+  .slide p{ color:var(--muted); line-height:1.5 }
+  .cta-row{ display:flex; gap:12px; flex-wrap:wrap; margin-top:10px }
+  .btn{
+    display:inline-flex; align-items:center; gap:10px; padding:12px 14px; border-radius:12px;
+    border:1px solid var(--line); background:linear-gradient(180deg,#1a1a1a,#101010);
+    transition:transform .1s ease, box-shadow .2s ease, border-color .2s ease;
+    cursor:pointer; color:#fff; font-weight:800;
+  }
+  .btn:hover{ transform:translateY(-1px); border-color:#3a3a3a; box-shadow: 0 14px 30px rgba(0,0,0,.35) }
+  .btn-primary{ background:var(--cta); border:0 }
+  .dot{ width:10px; height:10px; border-radius:50% }
+
+  .ph{
+    min-height:220px; border-radius:12px;
+    border:1px dashed var(--line); display:grid; place-items:center; color:var(--muted); font-size:14px;
+    background: linear-gradient(135deg, rgba(0,229,255,.18), rgba(255,255,255,.04));
+  }
+
+  /* IMPACT COUNTERS */
+  .impact{ padding:24px 0 10px }
+  .kpis{
+    display:grid; gap:14px; grid-template-columns: repeat(4, minmax(0,1fr));
+  }
+  @media (max-width:900px){ .kpis{ grid-template-columns: repeat(2,1fr) } }
+  .kpi{
+    text-align:center; padding:18px; border-radius:14px; border:1px solid var(--line);
+    background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.015));
+  }
+  .kpi .num{ font-size:38px; font-weight:900; letter-spacing:.5px }
+  .kpi .label{ color:var(--muted); font-size:13px }
+
+  /* SECTION BLOCKS */
+  section.block{ padding:28px 0 8px; }
+  .panel{
+    border:1px solid var(--line); border-radius:var(--radius); background:var(--surface);
+    box-shadow:var(--shadow); padding:20px;
+  }
+  .grid{ display:grid; gap:16px }
+  .cols-2{ grid-template-columns: repeat(2, minmax(0,1fr)); }
+  .cols-3{ grid-template-columns: repeat(3, minmax(0,1fr)); }
+  .cols-4{ grid-template-columns: repeat(4, minmax(0,1fr)); }
+  @media (max-width:1000px){ .cols-3,.cols-4{ grid-template-columns: repeat(2,1fr)} }
+  @media (max-width:640px){ .cols-2,.cols-3,.cols-4{ grid-template-columns: 1fr} }
+
+  .tag{
+    display:inline-flex; align-items:center; gap:6px; font-size:12px; color:#06111f; font-weight:800;
+    background:linear-gradient(90deg,#fff,#f0f6ff); padding:6px 10px; border-radius:999px; border:1px solid #d8e6ff;
+  }
+
+  /* Neon line icons (simple inline SVG look) */
+  .icon{
+    width:26px; height:26px; display:inline-block; vertical-align:middle;
+    filter: drop-shadow(0 0 6px rgba(0,229,255,.8));
+  }
+  .bullet{ display:flex; gap:12px; align-items:flex-start }
+  .bullet svg{ flex:0 0 auto }
+  .muted{ color:var(--muted) }
+
+  /* App window carousel (other apps) */
+  .app-carousel{ position:relative; overflow:hidden; border:1px solid var(--line); border-radius:var(--radius); background:var(--surface); }
+  .app-slides{ display:flex; transition: transform .4s ease; }
+  .app-card{ min-width:100%; padding:20px }
+  .car-btn{
+    position:absolute; top:50%; transform:translateY(-50%); background:#0d0d0d99;
+    border:1px solid var(--line); padding:10px; border-radius:12px; cursor:pointer;
+  }
+  .car-btn:hover{ background:#0d0d0dcc }
+  .prev{ left:10px } .next{ right:10px }
+
+  /* Forms */
+  textarea, input, select{
+    width:100%; padding:10px; border-radius:10px; border:1px solid var(--line);
+    background:#0f0f0f; color:var(--ink);
+  }
+  .btn-row{ display:flex; gap:10px; flex-wrap:wrap }
+
+  /* Footer-ish spacing */
+  .spacer{ height:28px }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav" role="navigation">
+  <div class="wrap nav-row">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true"></span>
+      <span class="neon">OUTSINC</span>
+    </div>
+
+    <div class="nav-links">
+      <a class="pill" href="#get-help">Get Help</a>
+      <a class="pill" href="#platforms">Platforms</a>
+      <a class="pill" href="#community">Community</a>
+      <a class="pill" href="#resources">Resources</a>
+      <a class="pill pill-outline" href="#report">Report</a>
+      <a class="pill pill-cta" href="#donate">Donate</a>
+      <a class="pill" href="#login" title="Client / Staff / Admin">Login</a>
+    </div>
+  </div>
+</nav>
+
+<!-- MARQUEE -->
+<div class="marquee" aria-label="Live updates and headlines">
+  <div class="marquee-track">
+    <span class="chip">🆘 Get Help Now</span>
+    <span class="chip">📣 Community Meeting: Thu 7pm</span>
+    <span class="chip">💖 Wishlist: High-need items</span>
+    <span class="chip">📊 Monthly Impact Posted</span>
+    <span class="chip">🧭 New: MOMCARE Guides</span>
+    <span class="chip">🤝 Partner with OUTSINC</span>
+    <!-- duplicate for seamless loop -->
+    <span class="chip">🆘 Get Help Now</span>
+    <span class="chip">📣 Community Meeting: Thu 7pm</span>
+    <span class="chip">💖 Wishlist: High-need items</span>
+    <span class="chip">📊 Monthly Impact Posted</span>
+    <span class="chip">🧭 New: MOMCARE Guides</span>
+    <span class="chip">🤝 Partner with OUTSINC</span>
+  </div>
+</div>
+
+<!-- HERO: ROTATING CTAs -->
+<header class="hero">
+  <div class="wrap">
+    <div class="slider" id="ctaSlider" aria-roledescription="carousel" aria-label="Primary actions">
+      <div class="slides">
+        <!-- 1) Start Your Care Plan (MOMCARE) -->
+        <section class="slide" aria-label="Start Your Care Plan">
+          <div>
+            <h1 class="neon">Start Your Care Plan</h1>
+            <p>MOMCARE onboarding for families — shared schedules, medication reminders, wellness check-ins, and a private family chat.</p>
+            <div class="cta-row">
+              <button class="btn btn-primary" data-action="start-care"><span class="dot" style="background:var(--momcare)"></span>Start MOMCARE</button>
+              <button class="btn" data-action="learn-care">Learn more</button>
+            </div>
+          </div>
+          <div class="ph">Photo idea: Close-up of a tablet with a care calendar (sunlight/hopeful)</div>
+        </section>
+
+        <!-- 2) Explore Our Apps -->
+        <section class="slide" aria-label="Explore Our Apps">
+          <div>
+            <h1 class="neon">Explore Our Apps</h1>
+            <p>Jump into the OUTSINC ecosystem — MOMCARE, ETHAN BLESS, DC1D3 ASK, and FOOTPRINT — built to work together.</p>
+            <div class="cta-row">
+              <button class="btn btn-primary" data-action="explore-apps"><span class="dot" style="background:var(--dcide)"></span>Open App Hub</button>
+              <button class="btn" data-action="compare">Compare features</button>
+            </div>
+          </div>
+          <div class="ph">Graphic idea: Collage of app screens with subtle neon glow</div>
+        </section>
+
+        <!-- 3) Take the Survey (QoL/Needs) -->
+        <section class="slide" aria-label="Take the Survey">
+          <div>
+            <h1 class="neon">Take the Survey</h1>
+            <p>Quality of Life / Needs Assessment — quick, trauma-informed questions to help us connect you with the right supports.</p>
+            <div class="cta-row">
+              <button class="btn btn-primary" data-action="survey"><span class="dot" style="background:var(--foot)"></span>Begin Survey</button>
+              <button class="btn" data-action="survey-info">Why we ask</button>
+            </div>
+          </div>
+          <div class="ph">Photo idea: Smiling person filling out a clipboard outdoors</div>
+        </section>
+
+        <!-- 4) Partner With Us -->
+        <section class="slide" aria-label="Partner With Us">
+          <div>
+            <h1 class="neon">Partner With Us</h1>
+            <p>Organization collaboration — align your impact with frontline support. Projects, referrals, co-designed initiatives.</p>
+            <div class="cta-row">
+              <button class="btn btn-primary" data-action="partner"><span class="dot" style="background:var(--ethan)"></span>Become a Partner</button>
+              <button class="btn" data-action="partner-learn">See partner guide</button>
+            </div>
+          </div>
+          <div class="ph">Photo idea: Handshake over meeting table (trust & alignment)</div>
+        </section>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- IMPACT COUNTERS -->
+<section class="impact">
+  <div class="wrap">
+    <div class="kpis" id="kpis">
+      <div class="kpi"><div class="num" data-target="1248">0</div><div class="label">Connections to Help</div></div>
+      <div class="kpi"><div class="num" data-target="312">0</div><div class="label">People Housed</div></div>
+      <div class="kpi"><div class="num" data-target="8790">0</div><div class="label">Meals Delivered</div></div>
+      <div class="kpi"><div class="num" data-target="97">0</div><div class="label">Community Partners</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- FRONT STAGE: MOMCARE -->
+<section class="block" id="platforms">
+  <div class="wrap">
+    <div class="panel">
+      <div style="display:flex; align-items:center; gap:10px; margin-bottom:6px">
+        <span class="tag">Front Stage Showcase</span>
+        <span class="tag" style="background:linear-gradient(90deg,#ffd5e2,#ffe9f0); border-color:#ffd5e2">MOMCARE</span>
+      </div>
+      <h2 class="outline">Care for Parents & Families</h2>
+      <p class="muted" style="margin-bottom:14px">Built for ease, clarity, and connection — with large-print options and a gentle, accessible UI/UX.</p>
+
+      <div class="grid cols-2">
+        <!-- Visual / “App Poster” -->
+        <div class="panel" style="background:linear-gradient(135deg, rgba(255,111,145,.2), rgba(255,255,255,.03)); border-style:dashed">
+          <div class="ph" style="min-height:260px">Replace with MOMCARE app poster / screenshots</div>
+          <div class="btn-row" style="margin-top:12px">
+            <button class="btn btn-primary" data-action="start-care"><span class="dot" style="background:var(--momcare)"></span>Start MOMCARE</button>
+            <button class="btn" data-action="care-docs">Read quick-start</button>
+          </div>
+        </div>
+
+        <!-- Feature lists -->
+        <div class="grid cols-2">
+          <div>
+            <h3 class="neon">For Clients & Families</h3>
+            <div class="grid" style="gap:10px">
+              <div class="bullet">
+                <!-- calendar icon -->
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="var(--glow)" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="8" y1="3" x2="8" y2="7"/><line x1="16" y1="3" x2="16" y2="7"/></svg>
+                <div>Shared schedules & appointment reminders</div>
+              </div>
+              <div class="bullet">
+                <!-- pill icon -->
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="var(--glow)" stroke-width="2"><rect x="3" y="8" width="18" height="8" rx="4"/><line x1="12" y1="8" x2="12" y2="16"/></svg>
+                <div>Medication tracker with gentle alerts</div>
+              </div>
+              <div class="bullet">
+                <!-- heart chat -->
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="var(--glow)" stroke-width="2"><path d="M4 12a7 7 0 0 1 14 0v6l-3-2-3 2-3-2-3 2z"/><path d="M8 11s1.5-2 4-2 4 2 4 2"/></svg>
+                <div>Private family chat & check‑ins</div>
+              </div>
+              <div class="bullet">
+                <!-- chart -->
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="var(--glow)" stroke-width="2"><polyline points="3 17 9 11 13 15 21 7"/><polyline points="3 3 3 7 7 7"/></svg>
+                <div>Wellness trends: sleep, mood, energy</div>
+              </div>
+              <div class="bullet">
+                <!-- folder -->
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="var(--glow)" stroke-width="2"><path d="M3 7h7l2 2h9v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+                <div>Document vault for IDs, notes, and care info</div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <h3 class="neon">For Care Workers</h3>
+            <div class="grid" style="gap:10px">
+              <div class="bullet">
+                <!-- users -->
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="var(--glow)" stroke-width="2"><path d="M16 11c1.66 0 3-1.57 3-3.5S17.66 4 16 4s-3 1.57-3 3.5S14.34 11 16 11z"/><path d="M7 11c1.66 0 3-1.57 3-3.5S8.66 4 7 4 4 5.57 4 7.5 5.34 11 7 11z"/><path d="M7 13c-2.67 0-8 1.34-8 4v3h14v-3c0-2.66-5.33-4-8-4z" transform="translate(8,0)"/></svg>
+                <div>Multi‑client views & caseload switching</div>
+              </div>
+              <div class="bullet">
+                <!-- bell -->
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="var(--glow)" stroke-width="2"><path d="M12 22a2 2 0 0 0 2-2H10a2 2 0 0 0 2 2z"/><path d="M18 8a6 6 0 1 0-12 0c0 7-3 7-3 7h18s-3 0-3-7"/></svg>
+                <div>Escalation alerts (missed meds, no check‑in)</div>
+              </div>
+              <div class="bullet">
+                <!-- shield -->
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="var(--glow)" stroke-width="2"><path d="M12 2L4 5v6c0 5 3.5 9 8 11 4.5-2 8-6 8-11V5z"/></svg>
+                <div>Consent‑aware data sharing controls</div>
+              </div>
+              <div class="bullet">
+                <!-- clipboard -->
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="var(--glow)" stroke-width="2"><rect x="8" y="3" width="8" height="4" rx="1"/><rect x="5" y="7" width="14" height="14" rx="2"/><line x1="8" y1="11" x2="16" y2="11"/></svg>
+                <div>Notes, tasks, and visit scheduling</div>
+              </div>
+              <div class="bullet">
+                <!-- link -->
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="var(--glow)" stroke-width="2"><path d="M10 13a5 5 0 0 1 0-7l1-1a5 5 0 0 1 7 7l-1 1"/><path d="M14 11a5 5 0 0 1 0 7l-1 1a5 5 0 0 1-7-7l1-1"/></svg>
+                <div>Referrals and partner integrations</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div> <!-- /grid -->
+    </div>
+  </div>
+</section>
+
+<!-- OTHER APPS WINDOW -->
+<section class="block">
+  <div class="wrap">
+    <div class="panel">
+      <div style="display:flex; align-items:center; gap:10px; margin-bottom:6px">
+        <span class="tag">App Showcase</span>
+      </div>
+      <h2 class="outline">Connected Platforms</h2>
+      <p class="muted" style="margin-bottom:12px">Each app stands alone — and works even better together.</p>
+
+      <div class="app-carousel" id="appShow">
+        <button class="car-btn prev" aria-label="Previous">◀</button>
+        <div class="app-slides">
+          <article class="app-card">
+            <h3 class="neon">ETHAN BLESS <span style="color:var(--ethan)">•</span></h3>
+            <p>Acts of kindness & micro‑volunteering challenges. Spark community with measurable impact.</p>
+            <div class="btn-row">
+              <button class="btn btn-primary"><span class="dot" style="background:var(--ethan)"></span>Launch</button>
+              <button class="btn">Learn More</button>
+            </div>
+          </article>
+          <article class="app-card">
+            <h3 class="neon">DC1D3 ASK <span style="color:var(--dcide)">•</span></h3>
+            <p>24/7 guided answers + live escalation to outreach. Find resources fast with human backup.</p>
+            <div class="btn-row">
+              <button class="btn btn-primary"><span class="dot" style="background:var(--dcide)"></span>Open Assistant</button>
+              <button class="btn">See Examples</button>
+            </div>
+          </article>
+          <article class="app-card">
+            <h3 class="neon">FOOTPRINT <span style="color:var(--foot)">•</span></h3>
+            <p>Progress & milestones across life areas, with green/yellow/red guidance you can act on.</p>
+            <div class="btn-row">
+              <button class="btn btn-primary"><span class="dot" style="background:var(--foot)"></span>View Dashboard</button>
+              <button class="btn">How It Works</button>
+            </div>
+          </article>
+        </div>
+        <button class="car-btn next" aria-label="Next">▶</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- REPORT AN ISSUE -->
+<section class="block" id="report">
+  <div class="wrap">
+    <div class="panel">
+      <div style="display:flex; align-items:center; gap:10px; margin-bottom:6px">
+        <span class="tag">Business & Public</span>
+      </div>
+      <h2 class="outline">Report an Issue</h2>
+      <p class="muted">Park cleanup, found sharps, welfare checks, items left behind, or general concerns. If unsure, submit anyway.</p>
+      <form onsubmit="event.preventDefault(); alert('Report submitted (demo). Thank you!')">
+        <div class="grid cols-2">
+          <div>
+            <label for="issue" class="muted">Describe what happened</label>
+            <textarea id="issue" rows="6" placeholder="What happened? Where? When? Any safety concerns?"></textarea>
+          </div>
+          <div>
+            <label class="muted">Your contact (optional)</label>
+            <input placeholder="Name (optional)"/>
+            <div style="height:8px"></div>
+            <input placeholder="Email or Phone"/>
+            <div style="height:8px"></div>
+            <select>
+              <option>Category…</option>
+              <option>Cleanup needed</option>
+              <option>Welfare check</option>
+              <option>Items left behind</option>
+              <option>Other</option>
+            </select>
+            <div style="height:8px"></div>
+            <button class="btn btn-primary" type="submit">Submit Report</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- RESOURCE DIRECTORY -->
+<section class="block" id="resources">
+  <div class="wrap">
+    <div class="panel">
+      <h2 class="outline">Resource Directory</h2>
+      <p class="muted">Browse key supports. Replace placeholders with your live data later.</p>
+      <div class="grid cols-3" style="margin-top:10px">
+        <!-- Keep these generic; plug in your real list when ready -->
+        <div class="panel">
+          <div style="display:flex; justify-content:space-between; align-items:center">
+            <h3>Emergency Shelter (Sample)</h3><span class="tag">Housing</span>
+          </div>
+          <p class="muted">Overnight shelter for singles, couples, and families.</p>
+          <div class="ph" style="height:70px">Map / Address</div>
+          <div class="btn-row" style="margin-top:8px">
+            <button class="btn">Call</button>
+            <button class="btn">Details</button>
+          </div>
+        </div>
+        <div class="panel">
+          <div style="display:flex; justify-content:space-between; align-items:center">
+            <h3>Mental Health Clinic (Sample)</h3><span class="tag">Mental Health</span>
+          </div>
+          <p class="muted">Walk‑in counselling & community mental health services.</p>
+          <div class="ph" style="height:70px">Map / Address</div>
+          <div class="btn-row" style="margin-top:8px">
+            <button class="btn">Call</button>
+            <button class="btn">Details</button>
+          </div>
+        </div>
+        <div class="panel">
+          <div style="display:flex; justify-content:space-between; align-items:center">
+            <h3>Addiction Services (Sample)</h3><span class="tag">Addiction</span>
+          </div>
+          <p class="muted">Outpatient counselling & rapid access support.</p>
+          <div class="ph" style="height:70px">Map / Address</div>
+          <div class="btn-row" style="margin-top:8px">
+            <button class="btn">Call</button>
+            <button class="btn">Details</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PARTNER LOGO WALL -->
+<section class="block" id="community">
+  <div class="wrap">
+    <div class="panel">
+      <h2 class="outline">Partners & Supporters</h2>
+      <p class="muted">Logo wall — replace placeholders with SVG/PNG logos.</p>
+      <div class="grid cols-4" style="margin-top:10px">
+        <div class="panel" style="display:grid;place-items:center;height:90px"><div class="ph" style="height:60px">Logo A</div></div>
+        <div class="panel" style="display:grid;place-items:center;height:90px"><div class="ph" style="height:60px">Logo B</div></div>
+        <div class="panel" style="display:grid;place-items:center;height:90px"><div class="ph" style="height:60px">Logo C</div></div>
+        <div class="panel" style="display:grid;place-items:center;height:90px"><div class="ph" style="height:60px">Logo D</div></div>
+        <div class="panel" style="display:grid;place-items:center;height:90px"><div class="ph" style="height:60px">Logo E</div></div>
+        <div class="panel" style="display:grid;place-items:center;height:90px"><div class="ph" style="height:60px">Logo F</div></div>
+        <div class="panel" style="display:grid;place-items:center;height:90px"><div class="ph" style="height:60px">Logo G</div></div>
+        <div class="panel" style="display:grid;place-items:center;height:90px"><div class="ph" style="height:60px">Logo H</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="spacer"></div>
+
+<script>
+/* ===== CTA slider (auto-rotate every ~7–10s, in your exact order) ===== */
+(function(){
+  const slider = document.querySelector('#ctaSlider .slides');
+  const total = slider.children.length;
+  let i = 0, timer;
+
+  function go(n){
+    i = (n+total)%total;
+    slider.style.transform = `translateX(-${i*100}%)`;
+  }
+  function schedule(){
+    clearTimeout(timer);
+    // random between 7–10 seconds as requested
+    const ms = Math.floor(7000 + Math.random()*3000);
+    timer = setTimeout(()=>{ go(i+1); schedule(); }, ms);
+  }
+  schedule();
+})();
+
+/* ===== KPI counters animate on view ===== */
+(function(){
+  const nums = [...document.querySelectorAll('.kpi .num')];
+  const io = new IntersectionObserver((entries,obs)=>{
+    entries.forEach(e=>{
+      if(e.isIntersecting){
+        const el = e.target; const target = +el.dataset.target; let val = 0;
+        (function step(){
+          val += Math.ceil((target-val)/10);
+          el.textContent = val.toLocaleString();
+          if(val<target) requestAnimationFrame(step);
+        })();
+        obs.unobserve(el);
+      }
+    })
+  }, {threshold:.4});
+  nums.forEach(n=>io.observe(n));
+})();
+
+/* ===== Other apps carousel ===== */
+(function(){
+  const root = document.getElementById('appShow');
+  const slides = root.querySelector('.app-slides');
+  const cards = root.querySelectorAll('.app-card');
+  let idx=0; const update=()=> slides.style.transform = `translateX(-${idx*100}%)`;
+  root.querySelector('.prev').onclick=()=>{ idx=(idx-1+cards.length)%cards.length; update(); };
+  root.querySelector('.next').onclick=()=>{ idx=(idx+1)%cards.length; update(); };
+})();
+
+/* ===== Wire up buttons (replace with real routes later) ===== */
+document.addEventListener('click', (e)=>{
+  const btn = e.target.closest('[data-action]');
+  if(!btn) return;
+  const action = btn.getAttribute('data-action');
+  const routes = {
+    'start-care':'/momcare/start',
+    'learn-care':'/momcare/guide',
+    'explore-apps':'/#platforms',
+    'compare':'/apps/compare',
+    'survey':'/survey/start',
+    'survey-info':'/survey/about',
+    'partner':'/partners/apply',
+    'partner-learn':'/partners/guide'
+  };
+  // Demo only:
+  alert(`Action: ${action}\nRoute: ${routes[action] || '#'}\n(Replace with real link)`);
+});
+</script>
+</body>
+</html>
